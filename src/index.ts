@@ -9,6 +9,7 @@ import {
 	introspectEndpoint,
 	introspectLocalSchema,
 } from "./helpers/introspection.js";
+import { generateHeaders } from "./helpers/headers.js";
 import { getVersion } from "./helpers/package.js" with { type: "macro" };
 
 // Check for deprecated command line arguments
@@ -32,6 +33,13 @@ const EnvSchema = z.object({
 			}
 		}),
 	SCHEMA: z.string().optional(),
+	// HTTP Signature authentication support
+	ENABLE_HTTP_SIGNATURE: z
+		.enum(["true", "false"])
+		.transform((value) => value === "true")
+		.default("false"),
+	HTTP_SIGNATURE_KEY_ID: z.string().optional(),
+	HTTP_SIGNATURE_SECRET: z.string().optional(),
 });
 
 const env = EnvSchema.parse(process.env);
@@ -48,7 +56,8 @@ server.resource("graphql-schema", new URL(env.ENDPOINT).href, async (uri) => {
 		if (env.SCHEMA) {
 			schema = await introspectLocalSchema(env.SCHEMA);
 		} else {
-			schema = await introspectEndpoint(env.ENDPOINT, env.HEADERS);
+			const headers = generateHeaders(env.ENDPOINT, env.HEADERS, undefined, env.ENABLE_HTTP_SIGNATURE);
+			schema = await introspectEndpoint(env.ENDPOINT, headers);
 		}
 
 		return {
@@ -81,7 +90,8 @@ server.tool(
 			if (env.SCHEMA) {
 				schema = await introspectLocalSchema(env.SCHEMA);
 			} else {
-				schema = await introspectEndpoint(env.ENDPOINT, env.HEADERS);
+				const headers = generateHeaders(env.ENDPOINT, env.HEADERS, undefined, env.ENABLE_HTTP_SIGNATURE);
+				schema = await introspectEndpoint(env.ENDPOINT, headers);
 			}
 
 			return {
@@ -147,12 +157,10 @@ server.tool(
 		}
 
 		try {
+			const headers = generateHeaders(env.ENDPOINT, env.HEADERS, undefined, env.ENABLE_HTTP_SIGNATURE);
 			const response = await fetch(env.ENDPOINT, {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					...env.HEADERS,
-				},
+				headers,
 				body: JSON.stringify({
 					query,
 					variables,
