@@ -25,6 +25,7 @@ COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /usr/src/app/src/ ./src/
 COPY --from=prerelease /usr/src/app/package.json .
 
-# run the app
+# run the HTTP server app instead of stdio server
 USER bun
-ENTRYPOINT [ "bun", "run", "src/index.ts" ]
+EXPOSE 3030
+ENTRYPOINT [ "bun", "run", "src/http-server.ts" ]

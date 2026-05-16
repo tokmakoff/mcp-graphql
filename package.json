@@ -6,7 +6,8 @@
 	"repository": "github:blurrah/mcp-graphql",
 	"license": "MIT",
 	"bin": {
-		"mcp-graphql": "./dist/index.js"
+		"mcp-graphql": "./dist/index.js",
+		"mcp-graphql-http": "./dist/http-server.js"
 	},
 	"files": ["dist"],
 	"devDependencies": {
@@ -29,8 +30,10 @@
 	},
 	"scripts": {
 		"dev": "bun --watch src/index.ts",
-		"build": "bun build src/index.ts --outdir dist --target node && bun -e \"require('fs').chmodSync('dist/index.js', '755')\"",
+		"dev:http": "bun --watch src/http-server.ts",
+		"build": "bun build src/index.ts --outdir dist --target node && bun build src/http-server.ts --outdir dist --target node && bun -e \"require('fs').chmodSync('dist/index.js', '755')\" && bun -e \"require('fs').chmodSync('dist/http-server.js', '755')\"",
 		"start": "bun run dist/index.js",
+		"start:http": "bun run dist/http-server.js",
 		"test": "vitest",
 		"test:run": "vitest run",
 		"test:coverage": "vitest run --coverage"
