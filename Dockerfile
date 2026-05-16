@@ -1,7 +1,7 @@
 # Bun based Dockerfile
 # Does not build the server, but runs it directly from source using bun
 
-FROM oven/bun:1 AS base
+FROM oven/bun:1-alpine AS base
 WORKDIR /usr/src/app
 
 # Cached dependency install layer
